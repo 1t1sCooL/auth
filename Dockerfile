@@ -3,7 +3,7 @@ FROM node:20-slim
 WORKDIR /app
 
 # Копируем файлы зависимостей
-COPY package*.json ./
+COPY be/package*.json ./
 RUN npm install --production
 
 # Копируем исходный код

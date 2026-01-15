@@ -12,4 +12,4 @@ COPY . .
 # Auth-сервис обычно слушает порт (например, 3000 или 5001)
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["node", "be/src/server"]

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-auth-service
+  template:
+    metadata:
+      labels:
+        app: mongo-auth-service
+    spec:
+      containers:
+        - name: mongo-auth-service
+          image: 1t1scool/mongo-auth-service:latest
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: JWT_SECRET
+            - name: EXP_IN
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-config
+                  key: EXP_IN
+            - name: SALT_ROUNDS
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-config
+                  key: SALT_ROUNDS
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-uri-secret
+                  key: MONGO_URL

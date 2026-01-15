@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-auth-service
+spec:
+  selector:
+    app: mongo-auth-service
+  ports:
+    - protocol: TCP
+      port: 80 # Внешний порт внутри кластера
+      targetPort: 3000 # Порт внутри контейнера

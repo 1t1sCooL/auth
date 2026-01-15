@@ -35,4 +35,4 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mongo-uri-secret
-                  key: MONGO_URL
+                  key: MONGO_URI

@@ -32,7 +32,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    # Обновляем тег образа в kustomization.yaml на номер сборки
+                    #  Обновляем тег образа в kustomization.yaml на номер сборки
                     cd kubernetes && kustomize edit set image 1t1scool/mongo-auth-service=1t1scool/mongo-auth-service:${BUILD_NUMBER}
                     # Применяем всё сразу
                     kubectl apply -k .

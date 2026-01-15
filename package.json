@@ -1,0 +1,13 @@
+{
+  "name": "auth-demo-fullstack",
+  "version": "1.0.0",
+  "scripts": {
+    "backend": "cd be && npm start",
+    "frontend": "cd fe && npx serve -p 5000",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -4,9 +4,9 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
 
 images:
   - name: mongo-auth-service
     newName: mongo-auth-service
     newTag: latest
+

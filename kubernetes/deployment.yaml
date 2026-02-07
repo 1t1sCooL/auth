@@ -36,3 +36,13 @@ spec:
                 secretKeyRef:
                   name: mongo-uri-secret
                   key: MONGO_URI
+            - name: MAILER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: MAILER_API_KEY
+            - name: MAILER_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: MAILER_API_URL

@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/constants");
+const BlacklistedToken = require("../models/BlacklistedToken");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
 
@@ -18,6 +19,12 @@ const authMiddleware = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    const blacklisted = await BlacklistedToken.findOne({ jti: decoded.jti });
+    if (blacklisted) {
+      return res.status(401).json({ error: "Токен недействителен (выход выполнен)" });
+    }
+
     req.user = decoded;
     next();
   } catch (err) {

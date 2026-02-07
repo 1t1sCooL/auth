@@ -1,6 +1,8 @@
+require("dotenv").config();
+
 const app = require("./app");
 const { connectDB, disconnectDB } = require("./config/database");
-const { JWT_SECRET, PORT = 3000 } = require("./config/constants");
+const { PORT } = require("./config/constants");
 
 const startServer = async () => {
   try {
@@ -8,7 +10,6 @@ const startServer = async () => {
 
     const server = app.listen(PORT, () => {
       console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
-      console.log(`🔑 JWT секрет: ${JWT_SECRET}`);
     });
 
     const shutdown = async () => {

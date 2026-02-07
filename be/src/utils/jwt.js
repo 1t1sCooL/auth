@@ -1,12 +1,33 @@
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET, JWT_EXPIRES_IN } = require("../config/constants");
+const { JWT_SECRET, JWT_EXPIRES_IN, REFRESH_EXPIRES_IN } = require("../config/constants");
 
-const generateToken = (payload) => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+const generateAccessToken = (payload) => {
+  const withJti = { ...payload, jti: crypto.randomUUID() };
+  return jwt.sign(withJti, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-const verifyToken = (token) => {
+const generateRefreshToken = (userId) => {
+  const tokenId = crypto.randomUUID();
+  const token = jwt.sign(
+    { sub: userId.toString(), tokenId },
+    JWT_SECRET,
+    { expiresIn: REFRESH_EXPIRES_IN }
+  );
+  return { token, tokenId };
+};
+
+const verifyAccessToken = (token) => {
   return jwt.verify(token, JWT_SECRET);
 };
 
-module.exports = { generateToken, verifyToken };
+const verifyRefreshToken = (token) => {
+  return jwt.verify(token, JWT_SECRET);
+};
+
+module.exports = {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+};

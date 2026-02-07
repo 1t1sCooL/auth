@@ -14,7 +14,10 @@ app.use(helmet());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: { error: "Слишком много запросов с вашего IP, повторите попытку через 15 минут" }
+  message: {
+    error:
+      "Слишком много запросов с вашего IP, повторите попытку через 15 минут",
+  },
 });
 
 app.use(limiter);
@@ -26,6 +29,14 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err.status === 400 && err.type === "entity.parse.failed") {
+    return res
+      .status(400)
+      .json({
+        error:
+          "Неверный формат JSON в теле запроса. Ключи и значения должны быть в двойных кавычках.",
+      });
+  }
   console.error("Ошибка сервера:", err);
   res.status(500).json({ error: "Внутренняя ошибка сервера" });
 });

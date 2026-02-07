@@ -15,7 +15,14 @@ const refreshLimiter = rateLimit({
   message: { error: "Слишком много запросов обновления токена, попробуйте позже" },
 });
 
+const verifyEmailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: "Слишком много попыток подтверждения, попробуйте позже" },
+});
+
 router.post("/register", authLimiter, authController.register);
+router.get("/verify-email", verifyEmailLimiter, authController.verifyEmail);
 router.post("/login", authLimiter, authController.login);
 router.post("/refresh", refreshLimiter, authController.refresh);
 router.post("/logout", refreshLimiter, authController.logout);

@@ -180,7 +180,12 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{BASE}}/api/auth/register",
@@ -191,6 +196,31 @@
             "api",
             "auth",
             "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify email",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE}}/api/auth/verify-email?token={{verificationToken}}",
+          "host": [
+            "{{BASE}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "verify-email"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{verificationToken}}"
+            }
           ]
         }
       },
@@ -228,7 +258,12 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{BASE}}/api/auth/login",
@@ -251,12 +286,12 @@
           "listen": "test",
           "script": {
             "exec": [
-              "const res = response.json()\r",
-              "if(res.accesToken){\r",
-              "     pm.collectionVariables.set('accessToken', res.accessToken)\r",
+              "const res = pm.response.json()\r",
+              "if(res.accessToken){\r",
+              "    pm.collectionVariables.set('accessToken', res.accessToken)\r",
               "}\r",
               "if(res.refreshToken){\r",
-              "     pm.collectionVariables.set('refreshToken', res.refreshToken)\r",
+              "    pm.collectionVariables.set('refreshToken', res.refreshToken)\r",
               "}"
             ],
             "type": "text/javascript",
@@ -275,7 +310,12 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{BASE}}/api/auth/refresh",
@@ -303,7 +343,12 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\",\n  \"accessToken\": \"{{accessToken}}\"\n}"
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\",\n  \"accessToken\": \"{{accessToken}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{BASE}}/api/auth/logout",
@@ -373,6 +418,22 @@
     },
     {
       "key": "BASE",
+      "value": ""
+    },
+    {
+      "key": "username",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "verificationToken",
       "value": ""
     }
   ]

@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const { ROLES } = require("../config/constants");
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -8,6 +10,13 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -18,10 +27,19 @@ const userSchema = new mongoose.Schema(
       default: ROLES.USER,
       enum: Object.values(ROLES),
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: { type: String },
+    emailVerificationExpires: { type: Date },
   },
   {
     timestamps: true,
   }
 );
+
+userSchema.index({ email: 1 });
+userSchema.statics.isValidEmail = (email) => emailRegex.test(email || "");
 
 module.exports = mongoose.model("User", userSchema);

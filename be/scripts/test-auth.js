@@ -1,9 +1,3 @@
-/**
- * Ручная проверка API авторизации (register → login → profile → refresh → logout).
- * Запуск: сначала подними сервер (npm run dev), затем: node scripts/test-auth.js
- * Требуется: Node 18+ (fetch), MongoDB и .env с JWT_SECRET и MONGO_URI.
- */
-
 const BASE = process.env.API_URL || "http://localhost:3000/api";
 const username = `testuser_${Date.now()}`;
 const password = "testpass123";
@@ -29,7 +23,9 @@ async function main() {
   const reg = await request("POST", "/auth/register", { username, password });
   console.log("Status:", reg.status, reg.data);
   if (reg.status !== 201) {
-    console.error("Регистрация не прошла. Убедись, что сервер запущен и MongoDB доступна.");
+    console.error(
+      "Регистрация не прошла. Убедись, что сервер запущен и MongoDB доступна.",
+    );
     process.exit(1);
   }
 
@@ -67,7 +63,22 @@ async function main() {
   const profile2 = await request("GET", "/users/profile", null, newAccess);
   console.log("Status:", profile2.status, profile2.data);
 
-  console.log("\n--- 6. Старый refresh не должен работать (уже использован) ---");
+  console.log("\n--- 5a. Смена пароля ---");
+  const newPassword = "newpass456";
+  const changePw = await request("PATCH", "/users/password", {
+    currentPassword: password,
+    newPassword,
+  }, newAccess);
+  console.log("Status:", changePw.status, changePw.data);
+  if (changePw.status !== 200) {
+    console.error("Смена пароля не прошла.");
+    process.exit(1);
+  }
+  console.log("Пароль изменён. Дальше используем новый пароль для удаления в конце.");
+
+  console.log(
+    "\n--- 6. Старый refresh не должен работать (уже использован) ---",
+  );
   const reuse = await request("POST", "/auth/refresh", { refreshToken });
   console.log("Status:", reuse.status, reuse.data);
   if (reuse.status === 200) {
@@ -77,11 +88,15 @@ async function main() {
   }
 
   console.log("\n--- 7. Logout ---");
-  const logout = await request("POST", "/auth/logout", { refreshToken: newRefresh });
+  const logout = await request("POST", "/auth/logout", {
+    refreshToken: newRefresh,
+  });
   console.log("Status:", logout.status, logout.data);
 
   console.log("\n--- 8. После logout refresh не должен работать ---");
-  const afterLogout = await request("POST", "/auth/refresh", { refreshToken: newRefresh });
+  const afterLogout = await request("POST", "/auth/refresh", {
+    refreshToken: newRefresh,
+  });
   console.log("Status:", afterLogout.status, afterLogout.data);
   if (afterLogout.status === 200) {
     console.error("Ожидалось 401: после logout refresh недействителен.");

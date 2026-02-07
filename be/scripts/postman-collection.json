@@ -1,95 +1,11 @@
 {
   "info": {
-    "name": "Auth API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "_postman_id": "9a4b6494-7058-474e-9e83-080c2edd5c78",
+    "name": "Auth",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51730067"
   },
   "item": [
-    {
-      "name": "Auth",
-      "item": [
-        {
-          "name": "Register",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"pass1234\"\n}"
-            },
-            "url": "http://localhost:3000/api/auth/register"
-          }
-        },
-        {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"pass1234\"\n}"
-            },
-            "url": "http://localhost:3000/api/auth/login",
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "const res = pm.response.json();",
-                    "if (res.accessToken) pm.collectionVariables.set('accessToken', res.accessToken);",
-                    "if (res.refreshToken) pm.collectionVariables.set('refreshToken', res.refreshToken);"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "name": "Refresh",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            },
-            "url": "http://localhost:3000/api/auth/refresh"
-          }
-        },
-        {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\",\n  \"accessToken\": \"{{accessToken}}\"\n}"
-            },
-            "url": "http://localhost:3000/api/auth/logout"
-          }
-        }
-      ]
-    },
     {
       "name": "Users",
       "item": [
@@ -103,11 +19,122 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "http://localhost:3000/api/users/profile"
-          }
+            "url": {
+              "raw": "{{BASE}}/api/users/profile",
+              "host": [
+                "{{BASE}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 204) {\r",
+                  "    \r",
+                  "    const requestData = JSON.parse(pm.request.body.raw);\r",
+                  "    const updatedPassword = requestData.newPassword;\r",
+                  "\r",
+                  "    pm.environment.set(\"password\", updatedPassword);\r",
+                  "\r",
+                  "    console.log(\"Переменная 'password' успешно обновлена на: \" + updatedPassword);\r",
+                  "} else {\r",
+                  "    console.warn(\"Пароль не был обновлен, так как запрос завершился с ошибкой: \" + pm.response.code);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE}}/api/users/password",
+              "host": [
+                "{{BASE}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE}}/api/users/account",
+              "host": [
+                "{{BASE}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "account"
+              ]
+            }
+          },
+          "response": []
         },
         {
           "name": "Dashboard",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
           "request": {
             "method": "GET",
             "header": [
@@ -116,21 +143,237 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "http://localhost:3000/api/users/dashboard"
-          }
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE}}/api/users/dashboard",
+              "host": [
+                "{{BASE}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
         }
       ]
+    },
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE}}/api/auth/register",
+          "host": [
+            "{{BASE}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json()\r",
+              "\r",
+              "if(res.accessToken){\r",
+              "    pm.collectionVariables.set('accessToken', res.accessToken)\r",
+              "}\r",
+              "if(res.refreshToken){\r",
+              "    pm.collectionVariables.set('refreshToken', res.refreshToken)\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE}}/api/auth/login",
+          "host": [
+            "{{BASE}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Refresh",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = response.json()\r",
+              "if(res.accesToken){\r",
+              "     pm.collectionVariables.set('accessToken', res.accessToken)\r",
+              "}\r",
+              "if(res.refreshToken){\r",
+              "     pm.collectionVariables.set('refreshToken', res.refreshToken)\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE}}/api/auth/refresh",
+          "host": [
+            "{{BASE}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "refresh"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\",\n  \"accessToken\": \"{{accessToken}}\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE}}/api/auth/logout",
+          "host": [
+            "{{BASE}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "logout"
+          ]
+        }
+      },
+      "response": []
     },
     {
       "name": "API Info",
       "request": {
         "method": "GET",
-        "url": "http://localhost:3000/api/"
+        "header": [],
+        "url": {
+          "raw": "{{BASE}}/api/",
+          "host": [
+            "{{BASE}}"
+          ],
+          "path": [
+            "api",
+            ""
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
       }
     }
   ],
   "variable": [
-    { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" }
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "BASE",
+      "value": ""
+    }
   ]
 }

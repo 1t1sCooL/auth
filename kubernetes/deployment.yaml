@@ -46,3 +46,8 @@ spec:
                 secretKeyRef:
                   name: auth-secrets
                   key: MAILER_API_URL
+            - name: AUTH_PUBLIC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: AUTH_PUBLIC_URL

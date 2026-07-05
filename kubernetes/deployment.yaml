@@ -51,3 +51,8 @@ spec:
                 secretKeyRef:
                   name: auth-secrets
                   key: AUTH_PUBLIC_URL
+            - name: RESET_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-config
+                  key: RESET_REDIRECT_URL

@@ -97,6 +97,26 @@ curl -X POST http://localhost:3000/api/auth/logout \
   -d '{"refreshToken":"ТВОЙ_REFRESH_TOKEN","accessToken":"ТВОЙ_ACCESS_TOKEN"}'
 ```
 
+### 6a. Запрос сброса пароля (forgot-password)
+
+Отправляет письмо со ссылкой на сброс. Ответ всегда одинаковый — существование email не раскрывается.
+
+```bash
+curl -X POST http://localhost:3000/api/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"testuser@example.com"}'
+```
+
+### 6b. Сброс пароля (reset-password)
+
+`token` — из ссылки в письме (`?token=...`). После смены пароля все сессии инвалидируются.
+
+```bash
+curl -X POST http://localhost:3000/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"token":"ТОКЕН_ИЗ_ПИСЬМА","password":"newpass1234"}'
+```
+
 ### 7. Информация об API
 
 ```bash

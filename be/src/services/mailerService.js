@@ -3,10 +3,19 @@ const axios = require("axios");
 const MAILER_API_URL = process.env.MAILER_API_URL || "http://localhost:4000";
 const MAILER_API_KEY = process.env.MAILER_API_KEY;
 const AUTH_PUBLIC_URL = process.env.AUTH_PUBLIC_URL || "http://localhost:3000";
+// Страница приложения-потребителя, где пользователь вводит новый пароль.
+// Токен добавляется query-параметром. По умолчанию — локальный фолбэк.
+const RESET_REDIRECT_URL = process.env.RESET_REDIRECT_URL || "http://localhost:3000/reset-password";
 
 function getVerificationLink(token) {
   const base = AUTH_PUBLIC_URL.replace(/\/$/, "");
   return `${base}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+}
+
+function getResetLink(token) {
+  const base = RESET_REDIRECT_URL.replace(/\/$/, "");
+  const sep = base.includes("?") ? "&" : "?";
+  return `${base}${sep}token=${encodeURIComponent(token)}`;
 }
 
 const SKIP_MAIL_SEND = process.env.SKIP_MAIL_SEND === "1" || process.env.SKIP_MAIL_SEND === "true";
@@ -43,6 +52,38 @@ async function sendVerificationEmail(to, username, token) {
   return data;
 }
 
+async function sendPasswordResetEmail(to, username, token) {
+  const link = getResetLink(token);
+
+  if (SKIP_MAIL_SEND) {
+    console.log("[dev] Письмо не отправляется (SKIP_MAIL_SEND). Ссылка для сброса пароля:", link);
+    return { skipped: true };
+  }
+
+  if (!MAILER_API_KEY) {
+    throw new Error("MAILER_API_KEY не задан в .env");
+  }
+  const subject = "Сброс пароля";
+  const html = `
+    <p>Здравствуйте, <strong>${escapeHtml(username)}</strong>.</p>
+    <p>Вы запросили сброс пароля. Чтобы задать новый пароль, перейдите по ссылке:</p>
+    <p><a href="${escapeHtml(link)}">Сбросить пароль</a></p>
+    <p>Ссылка действительна 1 час.</p>
+    <p>Если вы не запрашивали сброс, проигнорируйте это письмо — пароль останется прежним.</p>
+  `;
+  const text = `Сброс пароля. Перейдите по ссылке: ${link}`;
+
+  const { data } = await axios.post(
+    `${MAILER_API_URL.replace(/\/$/, "")}/api/send`,
+    { to, subject, text, html },
+    {
+      headers: { "x-api-key": MAILER_API_KEY },
+      timeout: 10000,
+    }
+  );
+  return data;
+}
+
 function escapeHtml(s) {
   if (typeof s !== "string") return "";
   return s
@@ -55,4 +96,6 @@ function escapeHtml(s) {
 module.exports = {
   sendVerificationEmail,
   getVerificationLink,
+  sendPasswordResetEmail,
+  getResetLink,
 };

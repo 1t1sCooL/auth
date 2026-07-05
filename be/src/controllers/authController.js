@@ -10,9 +10,10 @@ const {
   verifyRefreshToken,
 } = require("../utils/jwt");
 const { SALT_ROUNDS } = require("../config/constants");
-const { sendVerificationEmail } = require("../services/mailerService");
+const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/mailerService");
 
 const REFRESH_DAYS = 7;
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // ссылка сброса действительна 1 час
 
 class AuthController {
   async register(req, res) {
@@ -272,6 +273,92 @@ class AuthController {
     } catch (err) {
       console.error("Ошибка выхода:", err);
       res.status(500).json({ error: "Ошибка при выходе" });
+    }
+  }
+
+  async forgotPassword(req, res) {
+    // Единый ответ независимо от того, найден пользователь или нет —
+    // чтобы нельзя было перебором узнать, какие email зарегистрированы.
+    const genericMessage =
+      "Если аккаунт с таким email существует, мы отправили письмо со ссылкой для сброса пароля.";
+
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: "Email обязателен" });
+      }
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!User.isValidEmail(trimmedEmail)) {
+        return res.status(400).json({ error: "Некорректный формат email" });
+      }
+
+      const user = await User.findOne({ email: trimmedEmail });
+      // Отправляем письмо только подтверждённым аккаунтам: неподтверждённые
+      // всё равно не могут войти, а reset им ничего не даст.
+      if (user && user.emailVerified) {
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        user.passwordResetToken = resetToken;
+        user.passwordResetExpires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+        await user.save();
+
+        try {
+          await sendPasswordResetEmail(user.email, user.username, resetToken);
+        } catch (mailErr) {
+          // Не роняем и не раскрываем существование аккаунта: откатываем токен,
+          // логируем, отвечаем тем же общим сообщением.
+          console.error("Ошибка отправки письма сброса пароля:", {
+            message: mailErr.message,
+            code: mailErr.code,
+            status: mailErr.response?.status,
+            mailerResponse: mailErr.response?.data,
+          });
+          user.passwordResetToken = undefined;
+          user.passwordResetExpires = undefined;
+          await user.save();
+        }
+      }
+
+      return res.status(200).json({ message: genericMessage });
+    } catch (err) {
+      console.error("Ошибка запроса сброса пароля:", err);
+      res.status(500).json({ error: "Ошибка при запросе сброса пароля" });
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) {
+        return res.status(400).json({ error: "Токен и новый пароль обязательны" });
+      }
+      if (password.length < 6) {
+        return res.status(400).json({ error: "Пароль не менее 6 символов" });
+      }
+
+      const user = await User.findOne({
+        passwordResetToken: token,
+        passwordResetExpires: { $gt: new Date() },
+      });
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: "Ссылка недействительна или истекла. Запросите сброс пароля заново." });
+      }
+
+      user.password = await bcrypt.hash(password, SALT_ROUNDS);
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+
+      // Инвалидируем все активные сессии пользователя после смены пароля.
+      await RefreshToken.deleteMany({ userId: user._id });
+
+      res.status(200).json({
+        message: "Пароль изменён. Теперь войдите с новым паролем.",
+      });
+    } catch (err) {
+      console.error("Ошибка сброса пароля:", err);
+      res.status(500).json({ error: "Ошибка при сбросе пароля" });
     }
   }
 }
